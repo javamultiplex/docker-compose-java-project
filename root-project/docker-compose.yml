@@ -1,0 +1,38 @@
+services:
+  BLOG_DB:
+    image: postgres
+    container_name: blog-db
+    environment:
+      - POSTGRES_USER=BLOG_USER
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=BLOG_DB
+    restart: always
+    ports:
+      - 5432:5432
+
+  BLOG_API:
+    image: blog-api
+    container_name: blog-api
+    build:
+      context: api/
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://blog-db:5432/BLOG_DB
+      - SPRING_DATASOURCE_USERNAME=BLOG_USER
+      - SPRING_DATASOURCE_PASSWORD=root
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - 8080:8080
+    depends_on:
+      - BLOG_DB
+
+  BLOG_UI:
+    image: blog-ui
+    container_name: blog-ui
+    build:
+      context: ui/
+    environment:
+      - BLOG_API_URL=http://blog-api:8080/api/blog/posts
+    ports:
+      - 8081:8081
+    depends_on:
+      - BLOG_API
